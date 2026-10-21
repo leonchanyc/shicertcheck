@@ -1,1 +1,46 @@
-<meta http-equiv="refresh" content="0; URL=https://share.evernote.com/note/5881a842-6a4c-187c-6dd1-a0ffdbf804b6" />
+$Found     = $false
+$Tick      = 0
+$AwakeTick = 0
+$wsh = New-Object -ComObject WScript.Shell
+
+try {
+    while ($true) {
+        if ($Tick % 30 -eq 0) {
+            $Found = [bool](certutil -store -v My 2>$null | findstr /i /c:"Custom Device Auth")
+        }
+
+        if ($AwakeTick -eq 0) {
+            $wsh.SendKeys("{SCROLLLOCK}{SCROLLLOCK}")
+        }
+
+        if ($Found) {
+            if ($Tick % 2 -eq 0) {
+                [Console]::BackgroundColor = [ConsoleColor]::Green
+                [Console]::ForegroundColor = [ConsoleColor]::Black
+            } else {
+                [Console]::BackgroundColor = [ConsoleColor]::Black
+                [Console]::ForegroundColor = [ConsoleColor]::Green
+            }
+            [Console]::Clear()
+            $Text = "Custom Device Auth found"
+            $X = [math]::Max(0, [int]([Console]::WindowWidth  / 2 - $Text.Length / 2))
+            $Y = [int]([Console]::WindowHeight / 2)
+            [Console]::SetCursorPosition($X, $Y)
+            [Console]::Write($Text)
+        } else {
+            [Console]::BackgroundColor = [ConsoleColor]::Black
+            [Console]::ForegroundColor = [ConsoleColor]::Gray
+            [Console]::Clear()
+            [Console]::Write("Waiting for Custom Device Auth...   last check $([datetime]::Now.ToString('HH:mm:ss'))")
+        }
+
+        Start-Sleep -Seconds 1
+        $Tick      = ($Tick + 1) % 60
+        $AwakeTick = ($AwakeTick + 1) % 50
+    }
+}
+finally {
+    [Console]::ResetColor()
+    [Console]::Clear()
+    if ($wsh) { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($wsh) }
+}
