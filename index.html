@@ -1,4 +1,4 @@
-Start-Process certlm.msc
+Start-Process mmc.exe -ArgumentList "certlm.msc" -Verb RunAs
 
 $Found     = $false
 $Tick      = 0
